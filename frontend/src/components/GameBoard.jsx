@@ -23,6 +23,7 @@ export default function GameBoard() {
     const [ballSpeed, setBallSpeed] = useState(20);
     const [leftPaddlePos, setLeftPaddlePos] = useState(defaultCanvasHeight/2);
     const [rightPaddlePos, setRightPaddlePos] = useState(defaultCanvasHeight/2);
+    const [moveLeftPaddle, setMoveLeftPaddle] = useState(0);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -42,22 +43,67 @@ export default function GameBoard() {
     useEffect(() => {
         const handleKeyDown = (e) => {
             e.preventDefault();
-            console.log("keydown")
+            console.log("keydown", e.key)
             if(e.key === "ArrowDown")
-                setLeftPaddlePos(prevVal => prevVal+20);
+                // setLeftPaddlePos(prevVal => prevVal+20);
+                setMoveLeftPaddle(1);
             else if(e.key === "ArrowUp")
-                setLeftPaddlePos(prevVal => prevVal-20);
+                // setLeftPaddlePos(prevVal => prevVal-20);
+                setMoveLeftPaddle(-1);
         }
 
+        const handleKeyUp = (e) => {
+            e.preventDefault();
+            console.log("keyup")
+            console.log(e.key);
+            if(e.key === "ArrowDown" || e.key === "ArrowUp")
+                // setLeftPaddlePos(prevVal => prevVal+20);
+                setMoveLeftPaddle(0);
+            
+        }
 
         window.addEventListener('keydown', handleKeyDown);
-
+        window.addEventListener('keyup', handleKeyUp);
 
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
 
         }
     }, [])
+
+    useEffect(() => {
+        if(moveLeftPaddle === 0) return;
+
+        const handleMoveUp = () => {
+            console.log("Moving up");
+            setLeftPaddlePos(prevVal => Math.min(prevVal+3, defaultCanvasHeight-40));
+        }
+
+        let interval1, interval2;
+
+        const handleMoveDown = () => {
+            setLeftPaddlePos(prevVal =>  Math.max(prevVal-3, 40));
+        }
+
+        if(moveLeftPaddle === 1)
+        interval1 = setInterval(() => {
+            handleMoveUp();
+        }, 10);
+            
+        if(moveLeftPaddle === -1) {
+            interval2 = setInterval(() => {
+                handleMoveDown();
+            }, 10);
+        }
+
+
+        return () => {
+            clearInterval(interval1);
+            clearInterval(interval2);
+        }
+
+    }, [moveLeftPaddle])
 
     // Update the game board
     useEffect(() => {
